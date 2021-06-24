@@ -1,8 +1,8 @@
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from chrome_option import chrome_option
+from datetime import datetime
 import time
-import datetime
 import re 
 import logging
 
@@ -17,14 +17,14 @@ url = 'https://www.ema.europa.eu/en/news-events/whats-new'
 
 
 
-def get_indices(fromDate, todate):
+def get_indices(searchItem, fromDate, todate):
     logger.info('driver started')
 
     options = chrome_option()
 
     while True:
         try:
-            driver = webdriver.Chrome(ChromeDriverManager().install())#, options=options)
+            driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
             break
         except Exception:
             logger.info("Internet connection problem")
@@ -33,12 +33,12 @@ def get_indices(fromDate, todate):
     driver.get(url)
 
     # Select date
-    from_date = fromDate[:7]
+    from_date = fromDate[:7] #"2021-06"
 
     rows = total_contents(driver)
     total_results = driver.execute_script(from_date.join(total_result_function.split("[dynamic]")))
     total_results = int(total_results[1:-1])
-    print(total_results)
+    print("Total results found "+ str(total_results))
 
     
     driver.execute_script(from_date.join(pick_date_function.split("[dynamic]")))
@@ -57,11 +57,11 @@ def get_indices(fromDate, todate):
         rows = total_contents(driver)
         
     all_links = crawling_data(driver)
-    
+    filtered_data = filter_links(all_links, searchItem, fromDate, todate)
     # here date range will be checked
 
     driver.close()
-    return all_links
+    return filtered_data
 
 
 def crawling_data(driver):
@@ -74,16 +74,36 @@ def total_contents(driver):
     return rows
 
 
+def filter_links(all_links, searchItem, fromDate, todate):
+    
+    from_date = datetime.strptime(fromDate, '%Y-%m-%d')
+    to_date = datetime.strptime(todate, '%Y-%m-%d')
+
+    data = []
+    for content in all_links:
+        curr_date = datetime.strptime(content["date"], "%d/%m/%Y")
+        if from_date <= curr_date and curr_date <= to_date:
+            if searchItem in content["content"]:
+                data.append(content)
+        
+    
+    return data
+
+
+
+
+
 if __name__ == '__main__':
     fromDate = "2021-06-15"
     toDate = "2021-06-21"
+    searchItem = "orphan"
 
-    results = get_indices(fromDate, toDate)
+    results = get_indices(searchItem, fromDate, toDate)
     
-    # for data in results:
-    #     print(data)
+    for data in results:
+        print(data)
     
-    print(len(results))
+    print(str(len(results)) + f" results found for {searchItem}")
     
 
 
