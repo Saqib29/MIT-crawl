@@ -23,7 +23,7 @@ def get_indices(searchItem, fromDate, todate):
 
     while True:
         try:
-            driver = webdriver.Chrome(ChromeDriverManager().install())#, options=options)
+            driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
             break
         except Exception:
             logger.info("Internet connection problem")
@@ -114,8 +114,8 @@ def filter_links(all_links, searchItem, fromDate, todate):
 
 
 if __name__ == '__main__':
-    fromDate = "2021-06-25"
-    toDate = "2021-06-30"
+    fromDate = "2021-06-15"
+    toDate = "2021-06-25"
     searchItem = "Human"
 
     results = get_indices(searchItem, fromDate, toDate)
